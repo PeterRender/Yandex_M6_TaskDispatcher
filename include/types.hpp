@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 namespace dispatcher {
 
 // Перечисляемый тип приоритета задачи в системе диспетчеризации

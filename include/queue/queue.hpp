@@ -1,13 +1,13 @@
 #pragma once
-#include <functional>
-#include <optional>
+#include <functional>  // подключение стандартного функционального объекта (типа задачи)
+#include <optional>    // подключение словарного типа опционального результата
 
 namespace dispatcher::queue {
 
 // Структура конфигурации очереди задач
 struct QueueOptions {
-    bool bounded;                 // true - ограниченная, false - неограниченная очередь
-    std::optional<int> capacity;  // max размер очереди (только для bounded-очереди)
+    bool bounded;                    // true - ограниченная, false - неограниченная очередь
+    std::optional<size_t> capacity;  // max размер очереди (только для bounded-очереди)
 };
 
 // Интерфейсный класс очереди задач

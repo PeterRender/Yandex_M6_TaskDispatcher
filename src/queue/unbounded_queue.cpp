@@ -4,25 +4,31 @@ namespace dispatcher::queue {
 
 // Помещает задачу в очередь без блокировки
 void UnboundedQueue::push(std::function<void()> task) {
-    // Захватываем мьютекс и добавляем задачу
-    std::lock_guard<std::mutex> lock(mutex_);
-    task_queue_.push(std::move(task));
+    {
+        // Захватываем мьютекс и добавляем задачу
+        std::lock_guard<std::mutex> lock(mutex_);
+        task_queue_.push(std::move(task));
+    }
+
+    // Увеличиваем счетчик занятых слотов (задач) -> будим ждущий try_pop
+    busy_slots_.release();
 }
 
 // Пытается извлечь задачу из очереди без блокировки
 std::optional<std::function<void()>> UnboundedQueue::try_pop() {
-    // Захватываем мьютекс
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    // Проверяем, есть ли в очереди задачи
-    if (task_queue_.empty()) {
+    // Пытаемся захватить занятый слот (задачу) без блокировки
+    // (быстрая проверка наличия задач без захвата мьютекса)
+    if (!busy_slots_.try_acquire()) {
         return std::nullopt;  // возвращаем nullopt, если очередь пуста
     }
 
-    // Очередь не пуста -> забираем первую добавленную в нее задачу
+    // Захватываем мьютекс и забираем первую добавленную в очередь задачу
+    std::lock_guard<std::mutex> lock(mutex_);
     auto task = std::move(task_queue_.front());
     task_queue_.pop();
-    return task;
+
+    // Перемещаем std::function в результат (копирование может быть затратным или невозможным)
+    return std::move(task);
 }
 
 }  // namespace dispatcher::queue

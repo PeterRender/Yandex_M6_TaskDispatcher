@@ -20,6 +20,7 @@ void BoundedQueue::push(std::function<void()> task) {
 // Пытается извлечь задачу из очереди без блокировки
 std::optional<std::function<void()>> BoundedQueue::try_pop() {
     // Пытаемся захватить занятый слот (задачу) без блокировки
+    // (быстрая проверка наличия задач без захвата мьютекса)
     if (!busy_slots_.try_acquire()) {
         return std::nullopt;  // возвращаем nullopt, если очередь пуста
     }
@@ -32,7 +33,8 @@ std::optional<std::function<void()>> BoundedQueue::try_pop() {
     // Освобождаем слот -> будим ждущий push
     free_slots_.release();
 
-    return task;
+    // Перемещаем std::function в результат (копирование может быть затратным или невозможным)
+    return std::move(task);
 }
 
 }  // namespace dispatcher::queue

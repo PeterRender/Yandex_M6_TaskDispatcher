@@ -14,7 +14,7 @@ public:
     // Явный параметрический конструктор, принимающий max размер очереди
     explicit BoundedQueue(size_t capacity)
         : free_slots_(capacity),  // исходно число свободных слотов = max размеру очереди
-          busy_slots_(0) {}       // занятых слотов пока нет
+          busy_slots_(0) {}       // исходно занятых слотов нет
 
     // Виртуальный деструктор по умолчанию
     ~BoundedQueue() override = default;
