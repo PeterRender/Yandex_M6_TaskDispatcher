@@ -161,9 +161,18 @@ TEST(UnboundedQueueTest, ConcurrentPushAndPop) {
     std::vector<std::jthread> consumers;
     for (int i = 0; i < CONSUMERS; ++i) {
         consumers.emplace_back([&queue, &producers_done]() {
-            while (!producers_done || queue.try_pop().has_value()) {
-                if (auto task = queue.try_pop()) {
+            while (true) {
+                auto task = queue.try_pop();
+                if (task.has_value()) {
                     (*task)();
+                }
+                // Потоки-producers завершились и очередь пуста -> выходим
+                else if (producers_done) {
+                    break;
+                }
+                // Нет задач, но потоки-producers еще работают -> даем им время
+                else {
+                    std::this_thread::yield();
                 }
             }
         });
