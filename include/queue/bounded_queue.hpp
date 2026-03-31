@@ -1,6 +1,7 @@
 #pragma once
 #include "queue/queue.hpp"  // интерфейсный класс очереди задач
 
+#include <format>      // подключение стандартного шаблона форматированного вывода
 #include <functional>  // подключение стандартного функционального объекта (типа задачи)
 #include <mutex>       // подключение стандартного мьютекса (защита доступа к очереди)
 #include <queue>       // подключение стандартного FIFO-контейнера (хранилище задач)
@@ -14,7 +15,14 @@ public:
     // Явный параметрический конструктор, принимающий max размер очереди
     explicit BoundedQueue(size_t capacity)
         : free_slots_(capacity),  // исходно число свободных слотов = max размеру очереди
-          busy_slots_(0) {}       // исходно занятых слотов нет
+          busy_slots_(0)          // исходно занятых слотов нет
+    {
+        // Проверям, что задана ненулевая емкость очереди
+        if (capacity == 0) {
+            throw std::invalid_argument(
+                std::format("Failed to create BoundedQueue: capacity must be positive, got {}", capacity));
+        }
+    }
 
     // Виртуальный деструктор по умолчанию
     ~BoundedQueue() override = default;
