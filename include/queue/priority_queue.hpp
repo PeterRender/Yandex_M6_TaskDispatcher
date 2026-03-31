@@ -12,11 +12,14 @@
 
 namespace dispatcher::queue {
 
-// Класс очереди с приоритетами (сначала все High-задачи, потом Normal)
+// Класс приоритетной очереди задач (сначала все High-задачи, потом Normal)
 class PriorityQueue {
 public:
-    // Явный параметрический конструктор, создающий очереди согласно карте конфигураций
-    explicit PriorityQueue(const std::map<TaskPriority, QueueOptions> &cfg_map);
+    // Псевдоним для карты конфигураций приоритетной очереди
+    using cfgmap = std::map<TaskPriority, queue::QueueOptions>;
+
+    // Явный параметрический конструктор, принимающий карту конфигураций приоритетной очереди
+    explicit PriorityQueue(const cfgmap &cfg_map = def_map());
 
     // Деструктор по умолчанию
     ~PriorityQueue() = default;
@@ -30,6 +33,15 @@ public:
 
     // Сигнализирует о завершении работы
     void shutdown();
+
+    // Создает карту конфигурации приоритетной очереди по умолчанию (один раз при первом вызове):
+    // для High-задач - ограниченная очередь на 1000 элементов,
+    // для Normal-задач - неограниченная очередь
+    static const cfgmap &def_map() {
+        static const cfgmap cfg_map = {{TaskPriority::High, {.bounded = true, .capacity = 1000}},
+                                       {TaskPriority::Normal, {.bounded = false, .capacity = std::nullopt}}};
+        return cfg_map;
+    }
 
 private:
     std::array<std::unique_ptr<IQueue>, 2> queues_;  // отображение приоритета на очередь ([0] - High, [1] - Normal)

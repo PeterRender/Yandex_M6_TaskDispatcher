@@ -7,8 +7,8 @@
 
 namespace dispatcher::queue {
 
-// Параметрический конструктор, создающий очереди согласно карте конфигураций
-PriorityQueue::PriorityQueue(const std::map<TaskPriority, QueueOptions> &cfg_map) {
+// Параметрический конструктор, принимающий карту конфигураций приоритетной очереди
+PriorityQueue::PriorityQueue(const cfgmap &cfg_map) {
     // Цикл по конфигурациям из карты
     for (const auto &[priority, options] : cfg_map) {
         // Преобразуем тип приоритета в индекс

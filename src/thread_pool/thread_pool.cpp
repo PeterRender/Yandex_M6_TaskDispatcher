@@ -1,15 +1,20 @@
 #include "thread_pool/thread_pool.hpp"  // интерфейс класса пула потоков-воркеров
 
-#include <algorithm>  // подключение std::max
+#include <format>     // подключение стандартного шаблона форматированного вывода
+#include <stdexcept>  // подключение стандартных объектов обработки исключений
 
 namespace dispatcher::thread_pool {
 
 // Параметрический конструктор, инициализирующий пул потоков
-ThreadPool::ThreadPool(std::shared_ptr<queue::PriorityQueue> task_queue, size_t num_threads)
-    : task_queue_(std::move(task_queue)) {
+ThreadPool::ThreadPool(std::shared_ptr<pq> task_queue, size_t num_threads) : task_queue_(std::move(task_queue)) {
+    // Проверяем корректность количества потоков
+    if (num_threads < 1 || num_threads > MAX_THREADS) {
+        throw std::invalid_argument(
+            std::format("Failed to create ThreadPool: num_threads={} out of range [1, {}]", num_threads, MAX_THREADS));
+    }
+
     // Резервируем память под массив потоков-воркеров
-    // (hardware_concurrency() может вернуть 0, если информация недоступна - ставим защиту)
-    workers_.reserve(std::max<size_t>(num_threads, 1));
+    workers_.reserve(num_threads);
 
     // Заполняем массив потоков-воркеров
     for (size_t i = 0; i < num_threads; ++i) {

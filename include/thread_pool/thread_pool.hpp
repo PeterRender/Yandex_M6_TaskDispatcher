@@ -1,6 +1,6 @@
 #pragma once
 
-#include "queue/priority_queue.hpp"  // приоритетная очередь задач
+#include "queue/priority_queue.hpp"  // интерфейс класса приоритетной очереди задач
 
 #include <atomic>  // подключение стандартного шаблона атомарной переменной
 #include <memory>  // подключение стандартного шаблона разделяемого невладеющего указателя
@@ -12,10 +12,11 @@ namespace dispatcher::thread_pool {
 // Класс пула потоков-воркеров
 class ThreadPool {
 public:
+    using pq = queue::PriorityQueue;  // псевдоним для приоритетной очереди
+
     // Явный параметрический конструктор, инициализирующий пул потоков
-    // Принимает общую очередь задач и число потоков (по умолчанию - число потоков с аппаратным параллелизмом)
-    explicit ThreadPool(std::shared_ptr<queue::PriorityQueue> task_queue,
-                        size_t num_threads = std::thread::hardware_concurrency());
+    // Принимает общую приоритетную очередь задач и число потоков (по умолчанию - поддерживающих аппаратный параллелизм)
+    explicit ThreadPool(std::shared_ptr<pq> task_queue, size_t num_threads = hw_threads());
 
     // Деструктор (сигнализирует о завершении работы и дожидается выполнения всех потоков)
     ~ThreadPool();
@@ -26,13 +27,20 @@ public:
     ThreadPool(ThreadPool &&) = delete;
     ThreadPool &operator=(ThreadPool &&) = delete;
 
+    // Возвращает количество аппаратных потоков (вычисляется один раз при первом вызове)
+    static size_t hw_threads() {
+        static const size_t count = std::thread::hardware_concurrency();
+        return count;  // может вернуть 0, если инфа не доступна)
+    }
+
 private:
     // Рабочий метод потока-воркера (постоянно извлекает задачи из очереди и выполняет их)
     void worker();
 
-    std::shared_ptr<queue::PriorityQueue> task_queue_;  // общая очередь задач с приоритетами
-    std::vector<std::jthread> workers_;                 // массив потоков-воркеров
-    std::atomic<bool> stop_{false};                     // атомарный флаг прекращения работы
+    static constexpr size_t MAX_THREADS = 256;  // max допустимое количество потоков
+    std::shared_ptr<pq> task_queue_;            // общая приоритетная очередь задач
+    std::vector<std::jthread> workers_;         // массив потоков-воркеров
+    std::atomic<bool> stop_{false};             // атомарный флаг прекращения работы
 };
 
 }  // namespace dispatcher::thread_pool
