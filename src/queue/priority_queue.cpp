@@ -9,10 +9,20 @@ namespace dispatcher::queue {
 
 // Параметрический конструктор, принимающий карту конфигураций приоритетной очереди
 PriorityQueue::PriorityQueue(const cfgmap &cfg_map) {
+    // Проверяем, что карта конфигураций не пуста
+    if (cfg_map.empty()) {
+        throw std::invalid_argument("Failed to create PriorityQueue: configuration map is empty");
+    }
+
     // Цикл по конфигурациям из карты
     for (const auto &[priority, options] : cfg_map) {
         // Преобразуем тип приоритета в индекс
         size_t idx = static_cast<size_t>(priority);
+
+        // Проверяем выход за границы массива
+        if (idx >= queues_.size()) {
+            throw std::runtime_error("Failed to create PriorityQueue: invalid priority value");
+        }
 
         // Если в конфигурации указана ограниченная очередь
         if (options.bounded) {
@@ -65,10 +75,7 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
 
     // Ждем, пока появится задача или произойдет shutdown
     not_empty_.wait(lock, [this, &result]() {
-        if (!active_)
-            return true;
-
-        // Цикл по очередям (сначала с High-задачами (0), потом - с Normal (1))
+        // Сначала всегда проверяем, нет ли чего-нибудь в очередях
         for (auto &queue : queues_) {
             // Проверяем, что очередь существует
             if (queue) {
@@ -79,16 +86,22 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
                 }
             }
         }
-        return false;  // продолжаем ждать (нет задач для извлечения)
+
+        // Если задач нет, но пришел сигнал shutdown - тоже выходим из wait
+        if (!active_)
+            return true;
+
+        return false;  // задач нет и мы активны — продолжаем спать
     });
 
-    // Если получен сигнал о завершении работы и задач нет
-    if (!active_ && !result.has_value()) {
-        return std::nullopt;
+    // Если мы вышли из wait, и у нас есть задача в result - отдаем её.
+    // Если задачи нет и active_ == false - значит, очередь пуста и закрыта.
+    if (result.has_value()) {
+        // Перемещаем задачу в результат (копирование std::function может быть затратным или невозможным)
+        return std::move(result);
     }
 
-    // Перемещаем std::function в результат (копирование может быть затратным или невозможным)
-    return std::move(result);
+    return std::nullopt;  // сигнал воркеру завершить поток
 }
 
 // Сигнализирует о завершении работы

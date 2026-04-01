@@ -2,7 +2,6 @@
 
 #include "queue/priority_queue.hpp"  // интерфейс класса приоритетной очереди задач
 
-#include <atomic>  // подключение стандартного шаблона атомарной переменной
 #include <memory>  // подключение стандартного шаблона разделяемого невладеющего указателя
 #include <thread>  // подключение стандартного RAII-потока (std::jthread)
 #include <vector>  // подключение стандартного шаблона динамического массива
@@ -40,7 +39,6 @@ private:
     static constexpr size_t MAX_THREADS = 256;  // max допустимое количество потоков
     std::shared_ptr<pq> task_queue_;            // общая приоритетная очередь задач
     std::vector<std::jthread> workers_;         // массив потоков-воркеров
-    std::atomic<bool> stop_{false};             // атомарный флаг прекращения работы
 };
 
 }  // namespace dispatcher::thread_pool
