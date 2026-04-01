@@ -1,5 +1,7 @@
 #include "thread_pool/thread_pool.hpp"  // интерфейс класса пула потоков-воркеров
 
+#include "logger.hpp"  // интерфейс класса-синглтона для потокобезопасного логирования
+
 #include <format>     // подключение стандартного шаблона форматированного вывода
 #include <stdexcept>  // подключение стандартных объектов обработки исключений
 
@@ -40,8 +42,12 @@ void ThreadPool::worker() {
         // Задача есть - пытаемся выполнить ее
         try {
             (*task)();
+        } catch (const std::exception &e) {
+            // Логируем исключение стандартной библиотеки
+            Logger::Get().Log(std::string("Task failed with exception: ") + e.what());
         } catch (...) {
-            // логируем ошибку выполнения, но не роняем поток
+            // Логируем неизвестное исключение
+            Logger::Get().Log("Task failed with unknown exception");
         }
     }
 }
