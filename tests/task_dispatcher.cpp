@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <atomic>  // подключение стандартного шаблона атомарной переменной
-#include <thread>  // подключение стандартного RAII-потока (std::jthread)
-#include <vector>  // подключение стандартного шаблона динамического массива
+#include <atomic>
+#include <thread>
+#include <vector>
 
-#include "task_dispatcher.hpp"  // интерфейс класса диспетчера задач
+#include "task_dispatcher.hpp"
 
 using namespace dispatcher;
 

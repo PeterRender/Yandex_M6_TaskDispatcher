@@ -1,4 +1,4 @@
-#include "task_dispatcher.hpp"  // интерфейс класса диспетчера задач
+#include "task_dispatcher.hpp"
 
 namespace dispatcher {
 

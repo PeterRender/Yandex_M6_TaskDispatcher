@@ -1,9 +1,9 @@
-#include "thread_pool/thread_pool.hpp"  // интерфейс класса пула потоков-воркеров
+#include "thread_pool/thread_pool.hpp"
 
-#include "logger.hpp"  // интерфейс класса-синглтона для потокобезопасного логирования
+#include "logger.hpp"
 
-#include <format>     // подключение стандартного шаблона форматированного вывода
-#include <stdexcept>  // подключение стандартных объектов обработки исключений
+#include <format>
+#include <stdexcept>
 
 namespace dispatcher::thread_pool {
 

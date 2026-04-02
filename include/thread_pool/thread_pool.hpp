@@ -1,10 +1,10 @@
 #pragma once
 
-#include "queue/priority_queue.hpp"  // интерфейс класса приоритетной очереди задач
+#include "queue/priority_queue.hpp"
 
-#include <memory>  // подключение стандартного шаблона разделяемого невладеющего указателя
-#include <thread>  // подключение стандартного RAII-потока (std::jthread)
-#include <vector>  // подключение стандартного шаблона динамического массива
+#include <memory>
+#include <thread>
+#include <vector>
 
 namespace dispatcher::thread_pool {
 

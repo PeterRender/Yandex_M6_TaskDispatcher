@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include <atomic>  // подключение стандартного шаблона атомарной переменной
-#include <thread>  // подключение стандартного RAII-потока (std::jthread)
-#include <vector>  // подключение стандартного шаблона динамического массива
+#include <atomic>
+#include <thread>
+#include <vector>
 
-#include "queue/priority_queue.hpp"  // интерфейс класса очереди с приоритетами
-#include "types.hpp"                 // перечисляемый тип приоритета задачи в системе диспетчеризации
+#include "queue/priority_queue.hpp"
+#include "types.hpp"
 
 using namespace dispatcher;
 using namespace dispatcher::queue;

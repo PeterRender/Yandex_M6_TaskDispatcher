@@ -1,7 +1,7 @@
-#include <thread>  // подключение стандартного RAII-потока (std::jthread)
+#include <thread>
 
-#include "logger.hpp"           // интерфейс класса-синглтона для потокобезопасного логирования
-#include "task_dispatcher.hpp"  // интерфейс класса диспетчера задач
+#include "logger.hpp"
+#include "task_dispatcher.hpp"
 
 using namespace dispatcher;
 

@@ -1,10 +1,10 @@
 #pragma once
-#include "queue/queue.hpp"  // интерфейсный класс очереди задач
+#include "queue/queue.hpp"
 
-#include <functional>  // подключение стандартного функционального объекта (типа задачи)
-#include <mutex>       // подключение стандартного мьютекса (защита доступа к очереди)
-#include <queue>       // подключение стандартного FIFO-контейнера (хранилище задач)
-#include <semaphore>   // подключение стандартного семафора (счетчик занятых слотов очереди)
+#include <functional>
+#include <mutex>
+#include <queue>
+#include <semaphore>
 
 namespace dispatcher::queue {
 

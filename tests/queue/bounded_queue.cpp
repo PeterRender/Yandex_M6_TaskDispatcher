@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include <thread>  // подключение стандартного RAII-потока (std::jthread)
-#include <vector>  // подключение стандартного шаблона динамического массива
+#include <thread>
+#include <vector>
 
-#include "queue/bounded_queue.hpp"  // интерфейс класса ограниченной очереди задач
+#include "queue/bounded_queue.hpp"
 
 using namespace dispatcher::queue;
 

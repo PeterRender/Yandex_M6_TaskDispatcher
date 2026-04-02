@@ -1,4 +1,4 @@
-#include "queue/unbounded_queue.hpp"  // интерфейс класса неограниченной очереди задач
+#include "queue/unbounded_queue.hpp"
 
 namespace dispatcher::queue {
 

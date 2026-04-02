@@ -1,14 +1,14 @@
 #pragma once
-#include "queue/queue.hpp"  // интерфейсный класс очереди задач
-#include "types.hpp"        // перечисляемый тип приоритета задачи в системе диспетчеризации
+#include "queue/queue.hpp"
+#include "types.hpp"
 
-#include <array>               // подключение стандартного шаблона статического массива
-#include <condition_variable>  // подключение стандартной условной переменной (примитива синхронизации)
-#include <functional>          // подключение стандартного функционального объекта (типа задачи)
-#include <map>                 // подключение стандартного контейнера упорядоченного отображения
-#include <memory>              // подключение стандартного шаблона умного владеющего указателя
-#include <mutex>               // подключение стандартного мьютекса
-#include <optional>            // подключение словарного типа опционального результата
+#include <condition_variable>
+#include <flat_map>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <optional>
 
 namespace dispatcher::queue {
 
@@ -44,10 +44,10 @@ public:
     }
 
 private:
-    std::array<std::unique_ptr<IQueue>, 2> queues_;  // отображение приоритета на очередь ([0] - High, [1] - Normal)
-    bool active_{true};                              // флаг активности очереди
-    std::condition_variable not_empty_;              // условная переменнная для блокировки pop() при отсутствии задач
-    std::mutex mutex_;                               // мьютекс для защиты условной переменной и флага active_
+    std::flat_map<TaskPriority, std::unique_ptr<IQueue>> queues_;  // отображения приоритетов на очереди
+    bool active_{true};                                            // флаг активности очереди
+    std::condition_variable not_empty_;  // условная переменнная для блокировки pop() при отсутствии задач
+    std::mutex mutex_;                   // мьютекс для защиты условной переменной и флага active_
 };
 
 }  // namespace dispatcher::queue

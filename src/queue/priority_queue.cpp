@@ -1,9 +1,9 @@
-#include "queue/priority_queue.hpp"  // интерфейс класса очереди с приоритетами
+#include "queue/priority_queue.hpp"
 
-#include "queue/bounded_queue.hpp"    // интерфейс класса ограниченной очереди задач (для High-приоритета)
-#include "queue/unbounded_queue.hpp"  // интерфейс класса неограниченной очереди задач (для Normal-приоритета)
+#include "queue/bounded_queue.hpp"
+#include "queue/unbounded_queue.hpp"
 
-#include <stdexcept>  // подключение стандартных объектов для обработки исключений
+#include <stdexcept>
 
 namespace dispatcher::queue {
 
@@ -16,42 +16,25 @@ PriorityQueue::PriorityQueue(const cfgmap &cfg_map) {
 
     // Цикл по конфигурациям из карты
     for (const auto &[priority, options] : cfg_map) {
-        // Преобразуем тип приоритета в индекс
-        size_t idx = static_cast<size_t>(priority);
-
-        // Проверяем выход за границы массива
-        if (idx >= queues_.size()) {
-            throw std::runtime_error("Failed to create PriorityQueue: invalid priority value");
-        }
-
-        // Если в конфигурации указана ограниченная очередь
-        if (options.bounded) {
-            // Проверяем, задан ли max размер (емкость) очереди
-            if (!options.capacity.has_value()) {
-                throw std::invalid_argument("Failed to create bounded queue: no capacity is specified");
+        // Создаем отображение приоритета-ключа на очередь согласно конфигурации
+        // (все приоритеты-ключи уникальны по определению)
+        if (options.bounded) {                    // в конфигурации указана ограниченная очередь
+            if (!options.capacity.has_value()) {  // проверяем, задана ли емкость очереди
+                throw std::invalid_argument("Failed to create BoundedQueue: no capacity is specified");
             }
-            queues_[idx] = std::make_unique<BoundedQueue>(*options.capacity);
-        }
-        // В конфигурации указана неограниченная очередь
-        else {
-            queues_[idx] = std::make_unique<UnboundedQueue>();
+            queues_.emplace(priority, std::make_unique<BoundedQueue>(*options.capacity));
+        } else {  // в конфигурации указана неограниченная очередь
+            queues_.emplace(priority, std::make_unique<UnboundedQueue>());
         }
     }
 }
 
 // Помещает задачу в очередь соответствующего приоритета
 void PriorityQueue::push(TaskPriority priority, std::function<void()> task) {
-    // Преобразуем тип приоритета в индекс
-    size_t idx = static_cast<size_t>(priority);  // локальная переменная (существует только в стеке текущего потока)
-
-    // Проверяем выход за границы массива (защита от неожиданных значений)
-    // Массив queues_ неизменяем после конструктора, поэтому чтение без мьютекса безопасно
-    if (idx >= queues_.size()) {
-        throw std::runtime_error("Failed to push the task: invalid priority value");
-    }
-
-    // Проверяем, что очередь для этого приоритета сконфигурирована
-    if (!queues_[idx]) {
+    // Ищем очередь, соответствующую заданному приоритету
+    // ( queues_ неизменяем после конструктора -> чтение без мьютекса безопасно)
+    auto it = queues_.find(priority);
+    if (it == queues_.end()) {
         throw std::runtime_error("Failed to push the task: queue for this priority is not configured");
     }
 
@@ -59,7 +42,7 @@ void PriorityQueue::push(TaskPriority priority, std::function<void()> task) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Помещаем задачу в очередь (выполняется потокобезопасно внутри push)
-    queues_[idx]->push(std::move(task));
+    it->second->push(std::move(task));
 
     // Уведомляем один ожидающий поток о появлении задачи
     not_empty_.notify_one();
@@ -75,12 +58,10 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
 
     // Ждем, пока появится задача или произойдет shutdown
     not_empty_.wait(lock, [this, &result]() {
-        // Сначала всегда проверяем, нет ли чего-нибудь в очередях
-        for (auto &queue : queues_) {
-            // Проверяем, что очередь существует
+        // Проходим по очередям в порядке приоритета (flat_map уже отсортирован от High к Normal)
+        for (const auto &[_, queue] : queues_) {
             if (queue) {
-                // Пробуем извлечь задачу (неблокирующий try_pop)
-                result = queue->try_pop();  // перемещаем задачу в локальный объект result
+                result = queue->try_pop();  // пробуем извлечь задачу (неблокирующий try_pop)
                 if (result.has_value()) {
                     return true;
                 }

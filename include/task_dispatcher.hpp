@@ -1,11 +1,11 @@
 #pragma once
 
-#include <functional>  // подключение стандартного функционального объекта (типа задачи)
-#include <memory>      // подключение стандартных шаблонов умных указателей unique_ptr и shared_ptr
+#include <functional>
+#include <memory>
 
-#include "queue/priority_queue.hpp"     // интерфейс класса приоритетной очереди задач
-#include "thread_pool/thread_pool.hpp"  // интерфейс класса пула потоков-воркеров
-#include "types.hpp"                    // перечисляемый тип приоритета задачи в системе диспетчеризации
+#include "queue/priority_queue.hpp"
+#include "thread_pool/thread_pool.hpp"
+#include "types.hpp"
 
 namespace dispatcher {
 

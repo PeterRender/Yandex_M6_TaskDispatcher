@@ -1,6 +1,6 @@
 #pragma once
-#include <functional>  // подключение стандартного функционального объекта (типа задачи)
-#include <optional>    // подключение словарного типа опционального результата
+#include <functional>
+#include <optional>
 
 namespace dispatcher::queue {
 

@@ -1,4 +1,4 @@
-#include "queue/bounded_queue.hpp"  // интерфейс класса ограниченной очереди задач
+#include "queue/bounded_queue.hpp"
 
 namespace dispatcher::queue {
 
