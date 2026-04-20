@@ -1,7 +1,3 @@
-#include <chrono>
-#include <climits>
-#include <iostream>
-#include <print>
 #include <thread>
 
 #include "logger.hpp"
@@ -10,7 +6,7 @@
 using namespace dispatcher;
 
 int main() {
-    TaskDispatcher td(std::thread::hardware_concurrency());
+    TaskDispatcher td(std::thread::hardware_concurrency());  // диспетчер задач с приоритетами
     std::vector<std::jthread> threads;
 
     for (int i = 0; i < 5; ++i) {
